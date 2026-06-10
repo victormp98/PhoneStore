@@ -32,6 +32,7 @@ app.MapInventoryMovementEndpoints();
 app.MapCustomerEndpoints();
 app.MapCustomerAddressEndpoints();
 app.MapSaleEndpoints();
+app.MapRoleEndpoints();
 
 app.MapGet("/api/health", () =>
 {
