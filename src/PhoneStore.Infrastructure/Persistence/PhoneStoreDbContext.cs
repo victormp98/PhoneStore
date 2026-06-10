@@ -6,6 +6,7 @@ using PhoneStore.Domain.Inventory;
 using PhoneStore.Domain.Customers;
 namespace PhoneStore.Infrastructure.Persistence;
 using PhoneStore.Domain.Sales;
+using PhoneStore.Domain.Auth;
 
 public sealed class PhoneStoreDbContext : DbContext
 {
@@ -33,6 +34,17 @@ public sealed class PhoneStoreDbContext : DbContext
     public DbSet<SaleItem> SaleItems => Set<SaleItem>();
 
     public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<User> Users => Set<User>();
+
+    public DbSet<Role> Roles => Set<Role>();
+
+    public DbSet<Permission> Permissions => Set<Permission>();
+
+    public DbSet<UserRole> UserRoles => Set<UserRole>();
+
+    public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -521,6 +533,188 @@ public sealed class PhoneStoreDbContext : DbContext
                 .HasForeignKey(payment => payment.SaleId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.ToTable("users");
 
+            entity.HasKey(user => user.Id);
+
+            entity.Property(user => user.Name)
+                .HasColumnName("name")
+                .HasMaxLength(150)
+                .IsRequired();
+
+            entity.Property(user => user.Email)
+                .HasColumnName("email")
+                .HasMaxLength(150)
+                .IsRequired();
+
+            entity.Property(user => user.Phone)
+                .HasColumnName("phone")
+                .HasMaxLength(30);
+
+            entity.Property(user => user.PasswordHash)
+                .HasColumnName("password_hash")
+                .HasMaxLength(500)
+                .IsRequired();
+
+            entity.Property(user => user.Status)
+                .HasColumnName("status")
+                .HasMaxLength(30)
+                .IsRequired();
+
+            entity.Property(user => user.CreatedAt)
+                .HasColumnName("created_at")
+                .IsRequired();
+
+            entity.HasIndex(user => user.Email)
+                .IsUnique();
+        });
+
+        modelBuilder.Entity<Role>(entity =>
+        {
+            entity.ToTable("roles");
+
+            entity.HasKey(role => role.Id);
+
+            entity.Property(role => role.Name)
+                .HasColumnName("name")
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(role => role.Description)
+                .HasColumnName("description")
+                .HasMaxLength(250)
+                .IsRequired();
+
+            entity.HasIndex(role => role.Name)
+                .IsUnique();
+        });
+
+        modelBuilder.Entity<Permission>(entity =>
+        {
+            entity.ToTable("permissions");
+
+            entity.HasKey(permission => permission.Id);
+
+            entity.Property(permission => permission.Code)
+                .HasColumnName("code")
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(permission => permission.Description)
+                .HasColumnName("description")
+                .HasMaxLength(250)
+                .IsRequired();
+
+            entity.Property(permission => permission.Module)
+                .HasColumnName("module")
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.HasIndex(permission => permission.Code)
+                .IsUnique();
+        });
+
+        modelBuilder.Entity<UserRole>(entity =>
+        {
+            entity.ToTable("user_roles");
+
+            entity.HasKey(userRole => new
+            {
+                userRole.UserId,
+                userRole.RoleId
+            });
+
+            entity.Property(userRole => userRole.UserId)
+                .HasColumnName("user_id")
+                .IsRequired();
+
+            entity.Property(userRole => userRole.RoleId)
+                .HasColumnName("role_id")
+                .IsRequired();
+
+            entity.Property(userRole => userRole.CreatedAt)
+                .HasColumnName("created_at")
+                .IsRequired();
+
+            entity.HasOne<User>()
+                .WithMany()
+                .HasForeignKey(userRole => userRole.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne<Role>()
+                .WithMany()
+                .HasForeignKey(userRole => userRole.RoleId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<RolePermission>(entity =>
+        {
+            entity.ToTable("role_permissions");
+
+            entity.HasKey(rolePermission => new
+            {
+                rolePermission.RoleId,
+                rolePermission.PermissionId
+            });
+
+            entity.Property(rolePermission => rolePermission.RoleId)
+                .HasColumnName("role_id")
+                .IsRequired();
+
+            entity.Property(rolePermission => rolePermission.PermissionId)
+                .HasColumnName("permission_id")
+                .IsRequired();
+
+            entity.Property(rolePermission => rolePermission.CreatedAt)
+                .HasColumnName("created_at")
+                .IsRequired();
+
+            entity.HasOne<Role>()
+                .WithMany()
+                .HasForeignKey(rolePermission => rolePermission.RoleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne<Permission>()
+                .WithMany()
+                .HasForeignKey(rolePermission => rolePermission.PermissionId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.ToTable("refresh_tokens");
+
+            entity.HasKey(refreshToken => refreshToken.Id);
+
+            entity.Property(refreshToken => refreshToken.UserId)
+                .HasColumnName("user_id")
+                .IsRequired();
+
+            entity.Property(refreshToken => refreshToken.TokenHash)
+                .HasColumnName("token_hash")
+                .HasMaxLength(500)
+                .IsRequired();
+
+            entity.Property(refreshToken => refreshToken.ExpiresAt)
+                .HasColumnName("expires_at")
+                .IsRequired();
+
+            entity.Property(refreshToken => refreshToken.RevokedAt)
+                .HasColumnName("revoked_at");
+
+            entity.Property(refreshToken => refreshToken.CreatedAt)
+                .HasColumnName("created_at")
+                .IsRequired();
+
+            entity.HasOne<User>()
+                .WithMany()
+                .HasForeignKey(refreshToken => refreshToken.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(refreshToken => refreshToken.TokenHash)
+                .IsUnique();
+        });
     }
 }
