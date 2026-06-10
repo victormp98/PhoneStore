@@ -34,6 +34,8 @@ app.MapCustomerAddressEndpoints();
 app.MapSaleEndpoints();
 app.MapRoleEndpoints();
 app.MapUserEndpoints();
+app.MapAuthEndpoints();
+
 
 app.MapGet("/api/health", () =>
 {
