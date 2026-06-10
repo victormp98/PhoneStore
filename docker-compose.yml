@@ -1,0 +1,16 @@
+services:
+  phonestore-postgres:
+    image: postgres:16
+    container_name: phonestore-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: phonestore_db
+      POSTGRES_USER: phonestore_user
+      POSTGRES_PASSWORD: phonestore_password
+    ports:
+      - "5434:5432"
+    volumes:
+      - phonestore_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  phonestore_postgres_data:

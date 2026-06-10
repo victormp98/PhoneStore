@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PhoneStore.Api/PhoneStore.Api.csproj" />
+    <Project Path="src/PhoneStore.Application/PhoneStore.Application.csproj" />
+    <Project Path="src/PhoneStore.Domain/PhoneStore.Domain.csproj" />
+    <Project Path="src/PhoneStore.Infrastructure/PhoneStore.Infrastructure.csproj" />
+    <Project Path="src/PhoneStore.Shared/PhoneStore.Shared.csproj" />
+    <Project Path="src/PhoneStore.Worker/PhoneStore.Worker.csproj" />
+  </Folder>
+</Solution>
