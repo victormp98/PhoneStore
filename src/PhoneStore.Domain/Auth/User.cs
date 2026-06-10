@@ -15,4 +15,5 @@ public sealed class User
     public string Status { get; set; } = "ACTIVE";
 
     public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
 }

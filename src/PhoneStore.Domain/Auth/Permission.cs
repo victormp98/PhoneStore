@@ -9,4 +9,8 @@ public sealed class Permission
     public string Description { get; set; } = string.Empty;
 
     public string Module { get; set; } = string.Empty;
+
+    public DateTimeOffset CreatedAt { get; set; }
+
+    public DateTimeOffset? UpdatedAt { get; set; }
 }

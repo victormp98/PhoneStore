@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PhoneStore.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using PhoneStore.Infrastructure.Persistence;
 namespace PhoneStore.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(PhoneStoreDbContext))]
-    partial class PhoneStoreDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260610075619_AddAuthAuditFields")]
+    partial class AddAuthAuditFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

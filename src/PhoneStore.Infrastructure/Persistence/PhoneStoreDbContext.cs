@@ -567,6 +567,9 @@ public sealed class PhoneStoreDbContext : DbContext
                 .HasColumnName("created_at")
                 .IsRequired();
 
+            entity.Property(user => user.UpdatedAt)
+                .HasColumnName("updated_at");
+
             entity.HasIndex(user => user.Email)
                 .IsUnique();
         });
@@ -586,6 +589,13 @@ public sealed class PhoneStoreDbContext : DbContext
                 .HasColumnName("description")
                 .HasMaxLength(250)
                 .IsRequired();
+
+            entity.Property(role => role.CreatedAt)
+                .HasColumnName("created_at")
+                .IsRequired();
+
+            entity.Property(role => role.UpdatedAt)
+                .HasColumnName("updated_at");
 
             entity.HasIndex(role => role.Name)
                 .IsUnique();
@@ -611,6 +621,12 @@ public sealed class PhoneStoreDbContext : DbContext
                 .HasColumnName("module")
                 .HasMaxLength(100)
                 .IsRequired();
+            entity.Property(permission => permission.CreatedAt)
+                .HasColumnName("created_at")
+                .IsRequired();
+
+            entity.Property(permission => permission.UpdatedAt)
+                .HasColumnName("updated_at");
 
             entity.HasIndex(permission => permission.Code)
                 .IsUnique();
