@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PhoneStore.Infrastructure.Persistence;
@@ -77,6 +78,7 @@ public static class AuthEndpoints
                     role => role.Id,
                     (userRole, role) => role.Name
                 )
+                .Distinct()
                 .OrderBy(roleName => roleName)
                 .ToListAsync();
 
@@ -100,6 +102,28 @@ public static class AuthEndpoints
             ));
         })
         .WithName("Login");
+
+        group.MapGet("/me", [Authorize] (ClaimsPrincipal user) =>
+        {
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var name = user.FindFirst(ClaimTypes.Name)?.Value;
+            var email = user.FindFirst(ClaimTypes.Email)?.Value;
+
+            var roles = user.FindAll(ClaimTypes.Role)
+                .Select(role => role.Value)
+                .Distinct()
+                .OrderBy(role => role)
+                .ToList();
+
+            return Results.Ok(new
+            {
+                id = userId,
+                name,
+                email,
+                roles
+            });
+        })
+        .WithName("GetCurrentUser");
 
         return app;
     }
@@ -131,18 +155,14 @@ public static class AuthEndpoints
 
         var claims = new List<Claim>
         {
-            new(JwtRegisteredClaimNames.Sub, userId.ToString()),
-            new(JwtRegisteredClaimNames.Email, email),
             new(ClaimTypes.NameIdentifier, userId.ToString()),
             new(ClaimTypes.Name, name),
-            new("name", name),
-            new("email", email)
+            new(ClaimTypes.Email, email)
         };
 
-        foreach (var role in roles)
+        foreach (var role in roles.Distinct())
         {
             claims.Add(new Claim(ClaimTypes.Role, role));
-            claims.Add(new Claim("role", role));
         }
 
         var signingKey = new SymmetricSecurityKey(
