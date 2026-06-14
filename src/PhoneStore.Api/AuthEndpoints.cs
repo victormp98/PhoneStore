@@ -1,9 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using PhoneStore.Domain.Auth;
 using PhoneStore.Infrastructure.Persistence;
 
 namespace PhoneStore.Api.Endpoints;
@@ -22,18 +24,12 @@ public static class AuthEndpoints
         {
             if (string.IsNullOrWhiteSpace(request.Email))
             {
-                return Results.BadRequest(new
-                {
-                    message = "El email es obligatorio."
-                });
+                return Results.BadRequest(new { message = "El email es obligatorio." });
             }
 
             if (string.IsNullOrWhiteSpace(request.Password))
             {
-                return Results.BadRequest(new
-                {
-                    message = "La contraseña es obligatoria."
-                });
+                return Results.BadRequest(new { message = "La contraseña es obligatoria." });
             }
 
             var email = request.Email.Trim().ToLowerInvariant();
@@ -43,18 +39,12 @@ public static class AuthEndpoints
 
             if (user is null)
             {
-                return Results.BadRequest(new
-                {
-                    message = "Credenciales inválidas."
-                });
+                return Results.BadRequest(new { message = "Credenciales inválidas." });
             }
 
             if (user.Status != "ACTIVE")
             {
-                return Results.BadRequest(new
-                {
-                    message = "El usuario no está activo."
-                });
+                return Results.BadRequest(new { message = "El usuario no está activo." });
             }
 
             var passwordIsValid = BCrypt.Net.BCrypt.Verify(
@@ -64,31 +54,27 @@ public static class AuthEndpoints
 
             if (!passwordIsValid)
             {
-                return Results.BadRequest(new
-                {
-                    message = "Credenciales inválidas."
-                });
+                return Results.BadRequest(new { message = "Credenciales inválidas." });
             }
 
-            var roles = await dbContext.UserRoles
-                .Where(userRole => userRole.UserId == user.Id)
-                .Join(
-                    dbContext.Roles,
-                    userRole => userRole.RoleId,
-                    role => role.Id,
-                    (userRole, role) => role.Name
-                )
-                .Distinct()
-                .OrderBy(roleName => roleName)
-                .ToListAsync();
+            var roles = await GetUserRolesAsync(dbContext, user.Id);
 
-            var token = CreateAccessToken(
+            var accessToken = CreateAccessToken(
                 user.Id,
                 user.Name,
                 user.Email,
                 roles,
                 configuration
             );
+
+            var refreshToken = CreateRefreshToken(
+                user.Id,
+                configuration
+            );
+
+            dbContext.RefreshTokens.Add(refreshToken.Entity);
+
+            await dbContext.SaveChangesAsync();
 
             return Results.Ok(new LoginResponse(
                 user.Id,
@@ -97,11 +83,126 @@ public static class AuthEndpoints
                 user.Phone,
                 user.Status,
                 roles,
-                token.AccessToken,
-                token.ExpiresAt
+                accessToken.AccessToken,
+                accessToken.ExpiresAt,
+                refreshToken.PlainToken,
+                refreshToken.ExpiresAt
             ));
         })
         .WithName("Login");
+
+        group.MapPost("/refresh", async (
+            RefreshTokenRequest request,
+            PhoneStoreDbContext dbContext,
+            IConfiguration configuration) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.RefreshToken))
+            {
+                return Results.BadRequest(new { message = "El refresh token es obligatorio." });
+            }
+
+            var refreshTokenHash = HashToken(request.RefreshToken);
+
+            var storedRefreshToken = await dbContext.RefreshTokens
+                .FirstOrDefaultAsync(token => token.TokenHash == refreshTokenHash);
+
+            if (storedRefreshToken is null)
+            {
+                return Results.BadRequest(new { message = "Refresh token inválido." });
+            }
+
+            if (storedRefreshToken.RevokedAt is not null)
+            {
+                return Results.BadRequest(new { message = "Refresh token revocado." });
+            }
+
+            if (storedRefreshToken.ExpiresAt <= DateTimeOffset.UtcNow)
+            {
+                return Results.BadRequest(new { message = "Refresh token expirado." });
+            }
+
+            var user = await dbContext.Users
+                .FirstOrDefaultAsync(user => user.Id == storedRefreshToken.UserId);
+
+            if (user is null)
+            {
+                return Results.BadRequest(new { message = "Usuario no encontrado." });
+            }
+
+            if (user.Status != "ACTIVE")
+            {
+                return Results.BadRequest(new { message = "El usuario no está activo." });
+            }
+
+            var roles = await GetUserRolesAsync(dbContext, user.Id);
+
+            var accessToken = CreateAccessToken(
+                user.Id,
+                user.Name,
+                user.Email,
+                roles,
+                configuration
+            );
+
+            storedRefreshToken.RevokedAt = DateTimeOffset.UtcNow;
+
+            var newRefreshToken = CreateRefreshToken(
+                user.Id,
+                configuration
+            );
+
+            dbContext.RefreshTokens.Add(newRefreshToken.Entity);
+
+            await dbContext.SaveChangesAsync();
+
+            return Results.Ok(new RefreshTokenResponse(
+                accessToken.AccessToken,
+                accessToken.ExpiresAt,
+                newRefreshToken.PlainToken,
+                newRefreshToken.ExpiresAt
+            ));
+        })
+        .WithName("RefreshToken");
+
+        group.MapPost("/logout", async (
+            RefreshTokenRequest request,
+            PhoneStoreDbContext dbContext) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.RefreshToken))
+            {
+                return Results.BadRequest(new { message = "El refresh token es obligatorio." });
+            }
+
+            var refreshTokenHash = HashToken(request.RefreshToken);
+
+            var storedRefreshToken = await dbContext.RefreshTokens
+                .FirstOrDefaultAsync(token => token.TokenHash == refreshTokenHash);
+
+            if (storedRefreshToken is null)
+            {
+                return Results.BadRequest(new { message = "Refresh token inválido." });
+            }
+
+            if (storedRefreshToken.RevokedAt is not null)
+            {
+                return Results.BadRequest(new { message = "Refresh token revocado." });
+            }
+
+            if (storedRefreshToken.ExpiresAt <= DateTimeOffset.UtcNow)
+            {
+                return Results.BadRequest(new { message = "Refresh token expirado." });
+            }
+
+            storedRefreshToken.RevokedAt = DateTimeOffset.UtcNow;
+
+            await dbContext.SaveChangesAsync();
+
+            return Results.Ok(new
+            {
+                message = "Sesión cerrada correctamente."
+            });
+        })
+        .WithName("Logout");
 
         group.MapGet("/me", [Authorize] (ClaimsPrincipal user) =>
         {
@@ -126,6 +227,23 @@ public static class AuthEndpoints
         .WithName("GetCurrentUser");
 
         return app;
+    }
+
+    private static async Task<List<string>> GetUserRolesAsync(
+        PhoneStoreDbContext dbContext,
+        Guid userId)
+    {
+        return await dbContext.UserRoles
+            .Where(userRole => userRole.UserId == userId)
+            .Join(
+                dbContext.Roles,
+                userRole => userRole.RoleId,
+                role => role.Id,
+                (userRole, role) => role.Name
+            )
+            .Distinct()
+            .OrderBy(roleName => roleName)
+            .ToListAsync();
     }
 
     private static AccessTokenResult CreateAccessToken(
@@ -191,6 +309,47 @@ public static class AuthEndpoints
             expiresAt
         );
     }
+
+    private static RefreshTokenCreateResult CreateRefreshToken(
+        Guid userId,
+        IConfiguration configuration)
+    {
+        var refreshTokenDaysText = configuration["Jwt:RefreshTokenDays"];
+
+        var refreshTokenDays = int.TryParse(refreshTokenDaysText, out var days)
+            ? days
+            : 7;
+
+        var plainToken = Convert.ToBase64String(
+            RandomNumberGenerator.GetBytes(64)
+        );
+
+        var expiresAt = DateTimeOffset.UtcNow.AddDays(refreshTokenDays);
+
+        var entity = new RefreshToken
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            TokenHash = HashToken(plainToken),
+            ExpiresAt = expiresAt,
+            RevokedAt = null,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+
+        return new RefreshTokenCreateResult(
+            plainToken,
+            expiresAt,
+            entity
+        );
+    }
+
+    private static string HashToken(string token)
+    {
+        var tokenBytes = Encoding.UTF8.GetBytes(token);
+        var hashBytes = SHA256.HashData(tokenBytes);
+
+        return Convert.ToHexString(hashBytes);
+    }
 }
 
 public sealed record LoginRequest(
@@ -206,10 +365,29 @@ public sealed record LoginResponse(
     string Status,
     List<string> RoleNames,
     string AccessToken,
-    DateTimeOffset ExpiresAt
+    DateTimeOffset AccessTokenExpiresAt,
+    string RefreshToken,
+    DateTimeOffset RefreshTokenExpiresAt
+);
+
+public sealed record RefreshTokenRequest(
+    string RefreshToken
+);
+
+public sealed record RefreshTokenResponse(
+    string AccessToken,
+    DateTimeOffset AccessTokenExpiresAt,
+    string RefreshToken,
+    DateTimeOffset RefreshTokenExpiresAt
 );
 
 public sealed record AccessTokenResult(
     string AccessToken,
     DateTimeOffset ExpiresAt
+);
+
+public sealed record RefreshTokenCreateResult(
+    string PlainToken,
+    DateTimeOffset ExpiresAt,
+    RefreshToken Entity
 );
