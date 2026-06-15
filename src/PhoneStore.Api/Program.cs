@@ -1,9 +1,11 @@
 ﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using PhoneStore.Infrastructure.DependencyInjection;
 using PhoneStore.Api.Endpoints;
+using PhoneStore.Api.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,7 +49,51 @@ builder.Services
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(PermissionConstants.UsersRead, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.UsersRead));
+    options.AddPolicy(PermissionConstants.UsersCreate, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.UsersCreate));
+    options.AddPolicy(PermissionConstants.UsersUpdate, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.UsersUpdate));
+    options.AddPolicy(PermissionConstants.UsersDelete, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.UsersDelete));
+
+    options.AddPolicy(PermissionConstants.RolesRead, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.RolesRead));
+    options.AddPolicy(PermissionConstants.RolesCreate, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.RolesCreate));
+    options.AddPolicy(PermissionConstants.RolesUpdate, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.RolesUpdate));
+    options.AddPolicy(PermissionConstants.RolesDelete, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.RolesDelete));
+
+    options.AddPolicy(PermissionConstants.PermissionsRead, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.PermissionsRead));
+    options.AddPolicy(PermissionConstants.PermissionsAssign, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.PermissionsAssign));
+
+    options.AddPolicy(PermissionConstants.BranchesRead, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.BranchesRead));
+    options.AddPolicy(PermissionConstants.BranchesCreate, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.BranchesCreate));
+    options.AddPolicy(PermissionConstants.BranchesUpdate, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.BranchesUpdate));
+    options.AddPolicy(PermissionConstants.BranchesDelete, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.BranchesDelete));
+
+    options.AddPolicy(PermissionConstants.WarehousesRead, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.WarehousesRead));
+    options.AddPolicy(PermissionConstants.WarehousesCreate, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.WarehousesCreate));
+    options.AddPolicy(PermissionConstants.WarehousesUpdate, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.WarehousesUpdate));
+    options.AddPolicy(PermissionConstants.WarehousesDelete, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.WarehousesDelete));
+
+    options.AddPolicy(PermissionConstants.CatalogRead, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.CatalogRead));
+    options.AddPolicy(PermissionConstants.CatalogCreate, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.CatalogCreate));
+    options.AddPolicy(PermissionConstants.CatalogUpdate, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.CatalogUpdate));
+    options.AddPolicy(PermissionConstants.CatalogDelete, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.CatalogDelete));
+
+    options.AddPolicy(PermissionConstants.InventoryRead, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.InventoryRead));
+    options.AddPolicy(PermissionConstants.InventoryAdjust, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.InventoryAdjust));
+    options.AddPolicy(PermissionConstants.InventoryMove, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.InventoryMove));
+
+    options.AddPolicy(PermissionConstants.CustomersRead, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.CustomersRead));
+    options.AddPolicy(PermissionConstants.CustomersCreate, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.CustomersCreate));
+    options.AddPolicy(PermissionConstants.CustomersUpdate, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.CustomersUpdate));
+    options.AddPolicy(PermissionConstants.CustomersDelete, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.CustomersDelete));
+
+    options.AddPolicy(PermissionConstants.SalesRead, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.SalesRead));
+    options.AddPolicy(PermissionConstants.SalesCreate, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.SalesCreate));
+    options.AddPolicy(PermissionConstants.SalesCancel, AuthorizationPolicyExtensions.RequirePermission(PermissionConstants.SalesCancel));
+});
+
+builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
 var app = builder.Build();
 
@@ -76,6 +122,7 @@ app.MapSaleEndpoints();
 app.MapRoleEndpoints();
 app.MapUserEndpoints();
 app.MapAuthEndpoints();
+app.MapPermissionSeedEndpoints();
 
 app.MapGet("/api/health", () =>
 {
