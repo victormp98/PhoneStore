@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using PhoneStore.Api.Security;
 using PhoneStore.Domain.Inventory;
 using PhoneStore.Domain.Sales;
 using PhoneStore.Infrastructure.Persistence;
@@ -266,7 +267,8 @@ public static class SaleEndpoints
                     detail: "La venta fue revertida. No se guardaron cambios parciales.");
             }
         })
-        .WithName("CreateSale");
+        .WithName("CreateSale")
+        .RequireAuthorization(PermissionConstants.SalesCreate);
 
         group.MapGet("/", async (
             string? status,
@@ -312,7 +314,8 @@ public static class SaleEndpoints
 
             return Results.Ok(sales);
         })
-        .WithName("GetSales");
+        .WithName("GetSales")
+        .RequireAuthorization(PermissionConstants.SalesRead);
 
         group.MapGet("/{id:guid}", async (
             Guid id,
@@ -375,7 +378,8 @@ public static class SaleEndpoints
 
             return Results.Ok(response);
         })
-        .WithName("GetSaleById");
+        .WithName("GetSaleById")
+        .RequireAuthorization(PermissionConstants.SalesRead);
 
         group.MapPost("/{id:guid}/cancel", async (
             Guid id,
@@ -503,7 +507,8 @@ public static class SaleEndpoints
                     detail: "La cancelación fue revertida. No se guardaron cambios parciales.");
             }
         })
-        .WithName("CancelSale");
+        .WithName("CancelSale")
+        .RequireAuthorization(PermissionConstants.SalesCancel);
 
         return app;
     }

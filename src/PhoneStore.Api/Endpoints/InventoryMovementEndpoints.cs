@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using PhoneStore.Api.Security;
 using PhoneStore.Domain.Inventory;
 using PhoneStore.Infrastructure.Persistence;
 
@@ -34,7 +35,8 @@ public static class InventoryMovementEndpoints
 
             return Results.Ok(movements);
         })
-        .WithName("GetInventoryMovements");
+        .WithName("GetInventoryMovements")
+        .RequireAuthorization(PermissionConstants.InventoryRead);
 
         group.MapGet("/{id:guid}", async (
             Guid id,
@@ -69,7 +71,8 @@ public static class InventoryMovementEndpoints
 
             return Results.Ok(movement);
         })
-        .WithName("GetInventoryMovementById");
+        .WithName("GetInventoryMovementById")
+        .RequireAuthorization(PermissionConstants.InventoryRead);
 
         group.MapPost("/adjust", async (
             AdjustInventoryRequest request,
@@ -166,7 +169,8 @@ public static class InventoryMovementEndpoints
 
             return Results.Created($"/api/inventory-movements/{movement.Id}", response);
         })
-        .WithName("AdjustInventory");
+        .WithName("AdjustInventory")
+        .RequireAuthorization(PermissionConstants.InventoryMove);
 
         return app;
     }

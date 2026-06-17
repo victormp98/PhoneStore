@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using PhoneStore.Api.Security;
 using PhoneStore.Domain.Customers;
 using PhoneStore.Infrastructure.Persistence;
 
@@ -45,7 +46,8 @@ public static class CustomerAddressEndpoints
             return Results.Ok(addresses);
         })
         .WithTags("Customer Addresses")
-        .WithName("GetCustomerAddresses");
+        .WithName("GetCustomerAddresses")
+        .RequireAuthorization(PermissionConstants.CustomersRead);
 
         app.MapPost("/api/customers/{customerId:guid}/addresses", async (
             Guid customerId,
@@ -137,7 +139,8 @@ public static class CustomerAddressEndpoints
             return Results.Created($"/api/customer-addresses/{address.Id}", response);
         })
         .WithTags("Customer Addresses")
-        .WithName("CreateCustomerAddress");
+        .WithName("CreateCustomerAddress")
+        .RequireAuthorization(PermissionConstants.CustomersCreate);
 
         app.MapPut("/api/customer-addresses/{id:guid}", async (
             Guid id,
@@ -229,7 +232,8 @@ public static class CustomerAddressEndpoints
             return Results.Ok(response);
         })
         .WithTags("Customer Addresses")
-        .WithName("UpdateCustomerAddress");
+        .WithName("UpdateCustomerAddress")
+        .RequireAuthorization(PermissionConstants.CustomersUpdate);
 
         app.MapDelete("/api/customer-addresses/{id:guid}", async (
             Guid id,
@@ -264,7 +268,8 @@ public static class CustomerAddressEndpoints
             });
         })
         .WithTags("Customer Addresses")
-        .WithName("DeactivateCustomerAddress");
+        .WithName("DeactivateCustomerAddress")
+        .RequireAuthorization(PermissionConstants.CustomersDelete);
 
         return app;
     }

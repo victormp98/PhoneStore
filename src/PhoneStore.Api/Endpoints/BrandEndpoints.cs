@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using PhoneStore.Api.Security;
 using PhoneStore.Domain.Catalog;
 using PhoneStore.Infrastructure.Persistence;
 
@@ -28,7 +29,8 @@ public static class BrandEndpoints
 
             return Results.Ok(brands);
         })
-        .WithName("GetBrands");
+        .WithName("GetBrands")
+        .RequireAuthorization(PermissionConstants.CatalogRead);
 
         group.MapGet("/{id:guid}", async (
             Guid id,
@@ -57,7 +59,8 @@ public static class BrandEndpoints
 
             return Results.Ok(brand);
         })
-        .WithName("GetBrandById");
+        .WithName("GetBrandById")
+        .RequireAuthorization(PermissionConstants.CatalogRead);
 
         group.MapPost("/", async (
             CreateBrandRequest request,
@@ -101,7 +104,8 @@ public static class BrandEndpoints
 
             return Results.Created($"/api/brands/{brand.Id}", response);
         })
-        .WithName("CreateBrand");
+        .WithName("CreateBrand")
+        .RequireAuthorization(PermissionConstants.CatalogCreate);
 
         group.MapPut("/{id:guid}", async (
             Guid id,
@@ -154,7 +158,8 @@ public static class BrandEndpoints
 
             return Results.Ok(response);
         })
-        .WithName("UpdateBrand");
+        .WithName("UpdateBrand")
+        .RequireAuthorization(PermissionConstants.CatalogUpdate);
 
         group.MapDelete("/{id:guid}", async (
             Guid id,
@@ -186,7 +191,8 @@ public static class BrandEndpoints
                 brand.UpdatedAt
             });
         })
-        .WithName("DeactivateBrand");
+        .WithName("DeactivateBrand")
+        .RequireAuthorization(PermissionConstants.CatalogDelete);
 
         return app;
     }

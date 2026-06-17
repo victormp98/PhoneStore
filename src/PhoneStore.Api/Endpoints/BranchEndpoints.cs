@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using PhoneStore.Api.Security;
 using PhoneStore.Domain.Branches;
 using PhoneStore.Infrastructure.Persistence;
 
@@ -29,7 +30,8 @@ public static class BranchEndpoints
 
             return Results.Ok(branches);
         })
-        .WithName("GetBranches");
+        .WithName("GetBranches")
+        .RequireAuthorization(PermissionConstants.BranchesRead);
 
         group.MapGet("/{id:guid}", async (
             Guid id,
@@ -59,7 +61,8 @@ public static class BranchEndpoints
 
             return Results.Ok(branch);
         })
-        .WithName("GetBranchById");
+        .WithName("GetBranchById")
+        .RequireAuthorization(PermissionConstants.BranchesRead);
 
         group.MapPost("/", async (
             CreateBranchRequest request,
@@ -105,7 +108,8 @@ public static class BranchEndpoints
 
             return Results.Created($"/api/branches/{branch.Id}", response);
         })
-        .WithName("CreateBranch");
+        .WithName("CreateBranch")
+        .RequireAuthorization(PermissionConstants.BranchesCreate);
 
         group.MapPut("/{id:guid}", async (
             Guid id,
@@ -160,7 +164,8 @@ public static class BranchEndpoints
 
             return Results.Ok(response);
         })
-        .WithName("UpdateBranch");
+        .WithName("UpdateBranch")
+        .RequireAuthorization(PermissionConstants.BranchesUpdate);
 
         group.MapDelete("/{id:guid}", async (
             Guid id,
@@ -192,7 +197,8 @@ public static class BranchEndpoints
                 branch.UpdatedAt
             });
         })
-        .WithName("DeactivateBranch");
+        .WithName("DeactivateBranch")
+        .RequireAuthorization(PermissionConstants.BranchesDelete);
 
         return app;
     }

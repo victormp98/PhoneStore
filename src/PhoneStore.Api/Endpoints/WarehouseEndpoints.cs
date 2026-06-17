@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using PhoneStore.Api.Security;
 using PhoneStore.Domain.Warehouses;
 using PhoneStore.Infrastructure.Persistence;
 
@@ -28,7 +29,8 @@ public static class WarehouseEndpoints
 
             return Results.Ok(warehouses);
         })
-        .WithName("GetWarehouses");
+        .WithName("GetWarehouses")
+        .RequireAuthorization(PermissionConstants.WarehousesRead);
 
         group.MapGet("/{id:guid}", async (
             Guid id,
@@ -57,7 +59,8 @@ public static class WarehouseEndpoints
 
             return Results.Ok(warehouse);
         })
-        .WithName("GetWarehouseById");
+        .WithName("GetWarehouseById")
+        .RequireAuthorization(PermissionConstants.WarehousesRead);
 
         group.MapPost("/", async (
             CreateWarehouseRequest request,
@@ -114,7 +117,8 @@ public static class WarehouseEndpoints
 
             return Results.Created($"/api/warehouses/{warehouse.Id}", response);
         })
-        .WithName("CreateWarehouse");
+        .WithName("CreateWarehouse")
+        .RequireAuthorization(PermissionConstants.WarehousesCreate);
 
         group.MapPut("/{id:guid}", async (
             Guid id,
@@ -179,7 +183,8 @@ public static class WarehouseEndpoints
 
             return Results.Ok(response);
         })
-        .WithName("UpdateWarehouse");
+        .WithName("UpdateWarehouse")
+        .RequireAuthorization(PermissionConstants.WarehousesUpdate);
 
         group.MapDelete("/{id:guid}", async (
             Guid id,
@@ -212,7 +217,8 @@ public static class WarehouseEndpoints
                 warehouse.UpdatedAt
             });
         })
-        .WithName("DeactivateWarehouse");
+        .WithName("DeactivateWarehouse")
+        .RequireAuthorization(PermissionConstants.WarehousesDelete);
 
         return app;
     }

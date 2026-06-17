@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using PhoneStore.Api.Security;
 using PhoneStore.Domain.Inventory;
 using PhoneStore.Infrastructure.Persistence;
 
@@ -30,7 +31,8 @@ public static class InventoryStockEndpoints
 
             return Results.Ok(stocks);
         })
-        .WithName("GetInventoryStocks");
+        .WithName("GetInventoryStocks")
+        .RequireAuthorization(PermissionConstants.InventoryRead);
 
         group.MapGet("/{id:guid}", async (
             Guid id,
@@ -61,7 +63,8 @@ public static class InventoryStockEndpoints
 
             return Results.Ok(stock);
         })
-        .WithName("GetInventoryStockById");
+        .WithName("GetInventoryStockById")
+        .RequireAuthorization(PermissionConstants.InventoryRead);
 
         group.MapPost("/", async (
             CreateInventoryStockRequest request,
@@ -146,7 +149,8 @@ public static class InventoryStockEndpoints
 
             return Results.Created($"/api/inventory-stocks/{stock.Id}", response);
         })
-        .WithName("CreateInventoryStock");
+        .WithName("CreateInventoryStock")
+        .RequireAuthorization(PermissionConstants.InventoryAdjust);
 
         group.MapPut("/{id:guid}", async (
             Guid id,
@@ -201,7 +205,8 @@ public static class InventoryStockEndpoints
 
             return Results.Ok(response);
         })
-        .WithName("UpdateInventoryStock");
+        .WithName("UpdateInventoryStock")
+        .RequireAuthorization(PermissionConstants.InventoryAdjust);
 
         return app;
     }

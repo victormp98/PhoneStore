@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using PhoneStore.Api.Security;
 using PhoneStore.Domain.Catalog;
 using PhoneStore.Infrastructure.Persistence;
 
@@ -32,7 +33,8 @@ public static class ProductEndpoints
 
             return Results.Ok(products);
         })
-        .WithName("GetProducts");
+        .WithName("GetProducts")
+        .RequireAuthorization(PermissionConstants.CatalogRead);
 
         group.MapGet("/{id:guid}", async (
             Guid id,
@@ -65,7 +67,8 @@ public static class ProductEndpoints
 
             return Results.Ok(product);
         })
-        .WithName("GetProductById");
+        .WithName("GetProductById")
+        .RequireAuthorization(PermissionConstants.CatalogRead);
 
         group.MapPost("/", async (
             CreateProductRequest request,
@@ -147,7 +150,8 @@ public static class ProductEndpoints
 
             return Results.Created($"/api/products/{product.Id}", response);
         })
-        .WithName("CreateProduct");
+        .WithName("CreateProduct")
+        .RequireAuthorization(PermissionConstants.CatalogCreate);
 
         group.MapPut("/{id:guid}", async (
             Guid id,
@@ -238,7 +242,8 @@ public static class ProductEndpoints
 
             return Results.Ok(response);
         })
-        .WithName("UpdateProduct");
+        .WithName("UpdateProduct")
+        .RequireAuthorization(PermissionConstants.CatalogUpdate);
 
         group.MapDelete("/{id:guid}", async (
             Guid id,
@@ -270,7 +275,8 @@ public static class ProductEndpoints
                 product.UpdatedAt
             });
         })
-        .WithName("DeactivateProduct");
+        .WithName("DeactivateProduct")
+        .RequireAuthorization(PermissionConstants.CatalogDelete);
 
         return app;
     }
