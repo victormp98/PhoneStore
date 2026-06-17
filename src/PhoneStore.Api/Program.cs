@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using PhoneStore.Infrastructure.DependencyInjection;
 using PhoneStore.Api.Endpoints;
@@ -12,7 +13,43 @@ using PhoneStore.Api.Services.Sales;
 var builder = WebApplication.CreateBuilder(args);
 
 // OpenAPI / documentación de la API
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    const string bearerSchemeName = "Bearer";
+
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+        document.Components.SecuritySchemes[bearerSchemeName] = new OpenApiSecurityScheme
+        {
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            Description = "JWT Authorization header using the Bearer scheme."
+        };
+
+        return Task.CompletedTask;
+    });
+
+    options.AddOperationTransformer((operation, context, cancellationToken) =>
+    {
+        var metadata = context.Description.ActionDescriptor.EndpointMetadata;
+        var requiresAuthorization = metadata.OfType<IAuthorizeData>().Any();
+        var allowsAnonymous = metadata.OfType<IAllowAnonymous>().Any();
+
+        if (requiresAuthorization && !allowsAnonymous)
+        {
+            operation.Security ??= [];
+            operation.Security.Add(new OpenApiSecurityRequirement
+            {
+                [new OpenApiSecuritySchemeReference(bearerSchemeName, null, null)] = []
+            });
+        }
+
+        return Task.CompletedTask;
+    });
+});
 
 // Infraestructura: PostgreSQL, DbContext, repositorios y servicios técnicos
 builder.Services.AddInfrastructure(builder.Configuration);
