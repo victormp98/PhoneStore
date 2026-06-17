@@ -7,6 +7,7 @@ using PhoneStore.Infrastructure.DependencyInjection;
 using PhoneStore.Api.Endpoints;
 using PhoneStore.Api.Security;
 using PhoneStore.Api.Services.Auth;
+using PhoneStore.Api.Services.Sales;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -97,6 +98,7 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<SalesService>();
 
 var app = builder.Build();
 
