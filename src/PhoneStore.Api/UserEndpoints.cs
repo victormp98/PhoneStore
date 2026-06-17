@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using PhoneStore.Api.Security;
 using PhoneStore.Domain.Auth;
 using PhoneStore.Infrastructure.Persistence;
 
@@ -37,6 +38,7 @@ public static class UserEndpoints
                         role => role.Id,
                         (userRole, role) => role.Name
                     )
+                    .Distinct()
                     .OrderBy(roleName => roleName)
                     .ToListAsync();
 
@@ -45,7 +47,8 @@ public static class UserEndpoints
 
             return Results.Ok(users);
         })
-        .WithName("GetUsers");
+        .WithName("GetUsers")
+        .RequireAuthorization(PermissionConstants.UsersRead);
 
         group.MapGet("/{id:guid}", async (
             Guid id,
@@ -70,6 +73,7 @@ public static class UserEndpoints
                     role => role.Id,
                     (userRole, role) => role.Name
                 )
+                .Distinct()
                 .OrderBy(roleName => roleName)
                 .ToListAsync();
 
@@ -84,7 +88,8 @@ public static class UserEndpoints
                 roles
             ));
         })
-        .WithName("GetUserById");
+        .WithName("GetUserById")
+        .RequireAuthorization(PermissionConstants.UsersRead);
 
         group.MapPost("/", async (
             CreateUserRequest request,
@@ -148,6 +153,7 @@ public static class UserEndpoints
             if (roles.Count != requestedRoleNames.Count)
             {
                 var foundRoleNames = roles.Select(role => role.Name).ToList();
+
                 var missingRoleNames = requestedRoleNames
                     .Where(roleName => !foundRoleNames.Contains(roleName))
                     .ToList();
@@ -174,7 +180,8 @@ public static class UserEndpoints
                     Phone = string.IsNullOrWhiteSpace(request.Phone) ? null : request.Phone.Trim(),
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
                     Status = "ACTIVE",
-                    CreatedAt = now
+                    CreatedAt = now,
+                    UpdatedAt = null
                 };
 
                 var userRoles = roles.Select(role => new UserRole
@@ -198,7 +205,7 @@ public static class UserEndpoints
                     user.Status,
                     user.CreatedAt,
                     user.UpdatedAt,
-                    roles.Select(role => role.Name).OrderBy(roleName => roleName).ToList()
+                    roles.Select(role => role.Name).Distinct().OrderBy(roleName => roleName).ToList()
                 ));
             }
             catch
@@ -210,7 +217,8 @@ public static class UserEndpoints
                     detail: "La creación fue revertida. No se guardaron cambios parciales.");
             }
         })
-        .WithName("CreateUser");
+        .WithName("CreateUser")
+        .RequireAuthorization(PermissionConstants.UsersCreate);
 
         group.MapPut("/{id:guid}", async (
             Guid id,
@@ -259,7 +267,8 @@ public static class UserEndpoints
                 user.UpdatedAt
             });
         })
-        .WithName("UpdateUser");
+        .WithName("UpdateUser")
+        .RequireAuthorization(PermissionConstants.UsersUpdate);
 
         group.MapDelete("/{id:guid}", async (
             Guid id,
@@ -297,7 +306,8 @@ public static class UserEndpoints
                 user.UpdatedAt
             });
         })
-        .WithName("DeactivateUser");
+        .WithName("DeactivateUser")
+        .RequireAuthorization(PermissionConstants.UsersDelete);
 
         return app;
     }

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using PhoneStore.Api.Security;
 using PhoneStore.Domain.Auth;
 using PhoneStore.Infrastructure.Persistence;
 
@@ -26,7 +27,8 @@ public static class RoleEndpoints
 
             return Results.Ok(roles);
         })
-        .WithName("GetRoles");
+        .WithName("GetRoles")
+        .RequireAuthorization(PermissionConstants.RolesRead);
 
         group.MapPost("/", async (
             CreateRoleRequest request,
@@ -68,7 +70,8 @@ public static class RoleEndpoints
                 Id = Guid.NewGuid(),
                 Name = name,
                 Description = request.Description.Trim(),
-                CreatedAt = now
+                CreatedAt = now,
+                UpdatedAt = null
             };
 
             dbContext.Roles.Add(role);
@@ -83,7 +86,8 @@ public static class RoleEndpoints
                 role.UpdatedAt
             ));
         })
-        .WithName("CreateRole");
+        .WithName("CreateRole")
+        .RequireAuthorization(PermissionConstants.RolesCreate);
 
         return app;
     }
