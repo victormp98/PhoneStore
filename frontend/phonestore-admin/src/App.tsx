@@ -5,6 +5,7 @@ import { AppShell } from "./layout/AppShell";
 import { DashboardPage } from "./pages/DashboardPage";
 import { DataPage } from "./pages/DataPage";
 import { LoginPage } from "./pages/LoginPage";
+import { SalesPosPage } from "./pages/SalesPosPage";
 import type { CurrentUser } from "./types/api";
 import { modules } from "./utils/tableConfigs";
 
@@ -64,6 +65,8 @@ function App() {
     >
       {activeModule.key === "dashboard" ? (
         <DashboardPage />
+      ) : activeModule.key === "sales" ? (
+        <SalesPosPage />
       ) : (
         <DataPage moduleConfig={activeModule} />
       )}
