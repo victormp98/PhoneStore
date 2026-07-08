@@ -16,7 +16,7 @@ export function formatValue(value: unknown): string {
   }
 
   if (Array.isArray(value)) {
-    return value.length > 0 ? String(value.length) : "";
+    return value.filter(Boolean).join(", ");
   }
 
   if (typeof value === "object") {

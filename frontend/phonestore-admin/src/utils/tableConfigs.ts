@@ -1,136 +1,248 @@
 import type { ModuleConfig, TableColumn } from "../types/api";
 
 export const modules: ModuleConfig[] = [
+  // ── Ventas ──────────────────────────────────────────────────────────────────
   {
-    key: "dashboard",
-    label: "Dashboard",
-    endpoint: "",
-    description: "Resumen calculado con datos reales del backend"
-  },
-  {
-    key: "products",
-    label: "Catálogo",
-    endpoint: "/api/products/",
-    description: "Productos reales registrados en el backend"
-  },
-  {
-    key: "inventory",
-    label: "Inventario",
-    endpoint: "/api/inventory-stocks/",
-    description: "Stock real por producto y almacén"
-  },
-  {
-    key: "movements",
-    label: "Movimientos",
-    endpoint: "/api/inventory-movements/",
-    description: "Movimientos reales de inventario"
+    key: "sales",
+    label: "Caja / Ventas",
+    endpoint: "/api/sales/",
+    description: "Punto de venta — cobros rápidos",
+    group: "Ventas",
+    actions: [
+      { kind: "create", label: "Nueva venta", tone: "primary" },
+      { kind: "refresh", label: "Refrescar", tone: "secondary" }
+    ]
   },
   {
     key: "customers",
     label: "Clientes",
     endpoint: "/api/customers/",
-    description: "Clientes reales registrados"
+    description: "Clientes registrados",
+    group: "Ventas",
+    actions: [
+      { kind: "create", label: "Nuevo cliente", tone: "primary" },
+      { kind: "edit", label: "Editar", tone: "secondary" },
+      { kind: "delete", label: "Desactivar", tone: "danger" },
+      { kind: "filter", label: "Activos", tone: "secondary" },
+      { kind: "refresh", label: "Refrescar", tone: "secondary" }
+    ]
+  },
+  // ── Operaciones ──────────────────────────────────────────────────────────────
+  {
+    key: "repairs",
+    label: "Reparaciones",
+    endpoint: "",
+    description: "Taller técnico — seguimiento y registro",
+    group: "Operaciones"
   },
   {
-    key: "sales",
-    label: "Ventas",
-    endpoint: "/api/sales/",
-    description: "Ventas reales del sistema"
+    key: "delivery",
+    label: "Repartidor",
+    endpoint: "",
+    description: "Vista mobile del repartidor",
+    group: "Operaciones"
   },
+  {
+    key: "store",
+    label: "Tienda Online",
+    endpoint: "",
+    description: "Catálogo ecommerce para clientes",
+    group: "Operaciones"
+  },
+  // ── Dashboard ────────────────────────────────────────────────────────────────
+  {
+    key: "dashboard",
+    label: "Dashboard",
+    endpoint: "",
+    description: "Resumen y métricas en tiempo real",
+    group: "Reportes"
+  },
+  // ── Catálogo ──────────────────────────────────────────────────────────────────
+  {
+    key: "products",
+    label: "Catálogo",
+    endpoint: "/api/products/",
+    description: "Productos del catálogo",
+    group: "Catálogo",
+    actions: [
+      { kind: "create", label: "Nuevo producto", tone: "primary" },
+      { kind: "filter", label: "Solo activos", tone: "secondary" },
+      { kind: "refresh", label: "Refrescar", tone: "secondary" }
+    ]
+  },
+  {
+    key: "product-categories",
+    label: "Categorías",
+    endpoint: "/api/product-categories/",
+    description: "Categorías del catálogo",
+    group: "Catálogo",
+    actions: [
+      { kind: "create", label: "Nueva categoría", tone: "primary" },
+      { kind: "refresh", label: "Refrescar", tone: "secondary" }
+    ]
+  },
+  {
+    key: "brands",
+    label: "Marcas",
+    endpoint: "/api/brands/",
+    description: "Marcas del catálogo",
+    group: "Catálogo",
+    actions: [
+      { kind: "create", label: "Nueva marca", tone: "primary" },
+      { kind: "refresh", label: "Refrescar", tone: "secondary" }
+    ]
+  },
+  // ── Inventario ────────────────────────────────────────────────────────────────
+  {
+    key: "inventory",
+    label: "Inventario",
+    endpoint: "/api/inventory-stocks/",
+    description: "Stock por producto y almacén",
+    group: "Inventario",
+    actions: [
+      { kind: "filter", label: "Críticos", tone: "secondary" },
+      { kind: "refresh", label: "Refrescar", tone: "secondary" }
+    ]
+  },
+  {
+    key: "movements",
+    label: "Movimientos",
+    endpoint: "/api/inventory-movements/",
+    description: "Movimientos de inventario",
+    group: "Inventario",
+    actions: [
+      { kind: "create", label: "Ajuste", tone: "primary" },
+      { kind: "refresh", label: "Refrescar", tone: "secondary" }
+    ]
+  },
+  // ── Configuración ─────────────────────────────────────────────────────────────
   {
     key: "branches",
     label: "Sucursales",
     endpoint: "/api/branches/",
-    description: "Sucursales reales configuradas"
+    description: "Sucursales configuradas",
+    group: "Configuración",
+    actions: [
+      { kind: "create", label: "Nueva sucursal", tone: "primary" },
+      { kind: "edit", label: "Editar", tone: "secondary" },
+      { kind: "delete", label: "Desactivar", tone: "danger" },
+      { kind: "refresh", label: "Refrescar", tone: "secondary" }
+    ]
   },
   {
     key: "warehouses",
     label: "Almacenes",
     endpoint: "/api/warehouses/",
-    description: "Almacenes reales configurados"
+    description: "Almacenes configurados",
+    group: "Configuración",
+    actions: [
+      { kind: "create", label: "Nuevo almacén", tone: "primary" },
+      { kind: "edit", label: "Editar", tone: "secondary" },
+      { kind: "delete", label: "Desactivar", tone: "danger" },
+      { kind: "refresh", label: "Refrescar", tone: "secondary" }
+    ]
   },
   {
     key: "users",
     label: "Usuarios",
     endpoint: "/api/users/",
-    description: "Usuarios reales del sistema"
+    description: "Usuarios del sistema",
+    group: "Configuración",
+    actions: [
+      { kind: "create", label: "Nuevo usuario", tone: "primary" },
+      { kind: "edit", label: "Editar", tone: "secondary" },
+      { kind: "delete", label: "Desactivar", tone: "danger" },
+      { kind: "filter", label: "Activos", tone: "secondary" },
+      { kind: "refresh", label: "Refrescar", tone: "secondary" }
+    ]
   },
   {
     key: "roles",
-    label: "Roles",
+    label: "Roles y Permisos",
     endpoint: "/api/roles/",
-    description: "Roles reales del sistema"
+    description: "Roles y permisos del sistema",
+    group: "Configuración",
+    actions: [
+      { kind: "create", label: "Nuevo rol", tone: "primary" },
+      { kind: "edit", label: "Editar", tone: "secondary" },
+      { kind: "delete", label: "Eliminar", tone: "danger" },
+      { kind: "refresh", label: "Refrescar", tone: "secondary" }
+    ]
   }
 ];
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Column definitions (unchanged)
+// ─────────────────────────────────────────────────────────────────────────────
 export const tableColumnsByModule: Record<string, TableColumn[]> = {
+  brands: [
+    { key: "name", label: "Nombre" },
+    { key: "isActive", label: "Estado" },
+    { key: "createdAt", label: "Creado" }
+  ],
+  "product-categories": [
+    { key: "name", label: "Nombre" },
+    { key: "description", label: "Descripción" },
+    { key: "isActive", label: "Estado" }
+  ],
   products: [
-    { key: "sku", label: "SKU", type: "text" },
-    { key: "name", label: "Nombre", type: "text" },
-    { key: "description", label: "Descripción", type: "text" },
-    { key: "salePrice", label: "Precio venta", type: "money" },
-    { key: "isActive", label: "Activo", type: "boolean" },
-    { key: "createdAt", label: "Creado", type: "date" }
+    { key: "sku", label: "SKU" },
+    { key: "name", label: "Nombre" },
+    { key: "salePrice", label: "Precio Venta", type: "money" },
+    { key: "costPrice", label: "Costo", type: "money" },
+    { key: "isActive", label: "Estado" }
   ],
   inventory: [
-    { key: "productId", label: "ProductoId", type: "shortId" },
-    { key: "warehouseId", label: "AlmacénId", type: "shortId" },
-    { key: "quantity", label: "Cantidad", type: "text" },
-    { key: "reservedQuantity", label: "Reservado", type: "text" },
-    { key: "availableQuantity", label: "Disponible", type: "text" },
-    { key: "updatedAt", label: "Actualizado", type: "date" }
+    { key: "product", label: "Producto" },
+    { key: "warehouse", label: "Almacén" },
+    { key: "quantity", label: "Cantidad", type: "number" },
+    { key: "minStock", label: "Stock Mínimo", type: "number" },
+    { key: "maxStock", label: "Stock Máximo", type: "number" }
   ],
   movements: [
-    { key: "movementType", label: "Tipo", type: "status" },
-    { key: "productId", label: "ProductoId", type: "shortId" },
-    { key: "warehouseId", label: "AlmacénId", type: "shortId" },
-    { key: "qty", label: "Cantidad", type: "text" },
-    { key: "referenceId", label: "Referencia", type: "shortId" },
-    { key: "createdAt", label: "Creado", type: "date" }
+    { key: "type", label: "Tipo" },
+    { key: "product", label: "Producto" },
+    { key: "quantity", label: "Cantidad", type: "number" },
+    { key: "warehouse", label: "Almacén" },
+    { key: "createdAt", label: "Fecha", type: "date" }
   ],
   customers: [
-    { key: "name", label: "Nombre", type: "text" },
-    { key: "email", label: "Email", type: "text" },
-    { key: "phone", label: "Teléfono", type: "text" },
-    { key: "status", label: "Status", type: "status" },
-    { key: "createdAt", label: "Creado", type: "date" }
+    { key: "name", label: "Nombre" },
+    { key: "email", label: "Email" },
+    { key: "phone", label: "Teléfono" },
+    { key: "isActive", label: "Estado" },
+    { key: "createdAt", label: "Registrado", type: "date" }
   ],
   sales: [
-    { key: "id", label: "ID", type: "shortId" },
-    { key: "customerId", label: "ClienteId", type: "shortId" },
-    { key: "branchId", label: "SucursalId", type: "shortId" },
-    { key: "warehouseId", label: "AlmacénId", type: "shortId" },
-    { key: "status", label: "Status", type: "status" },
-    { key: "subtotal", label: "Subtotal", type: "money" },
-    { key: "discountTotal", label: "Descuento", type: "money" },
-    { key: "taxTotal", label: "Impuesto", type: "money" },
+    { key: "id", label: "# Venta", type: "shortId" },
     { key: "total", label: "Total", type: "money" },
-    { key: "createdAt", label: "Creado", type: "date" }
+    { key: "status", label: "Estado" },
+    { key: "paymentMethod", label: "Pago" },
+    { key: "createdAt", label: "Fecha", type: "date" }
   ],
   branches: [
-    { key: "name", label: "Nombre", type: "text" },
-    { key: "code", label: "Código", type: "text" },
-    { key: "phone", label: "Teléfono", type: "text" },
-    { key: "isActive", label: "Activa", type: "boolean" },
+    { key: "name", label: "Nombre" },
+    { key: "code", label: "Código" },
+    { key: "isActive", label: "Estado" },
     { key: "createdAt", label: "Creado", type: "date" }
   ],
   warehouses: [
-    { key: "name", label: "Nombre", type: "text" },
-    { key: "code", label: "Código", type: "text" },
-    { key: "branchId", label: "SucursalId", type: "shortId" },
-    { key: "isActive", label: "Activo", type: "boolean" },
-    { key: "createdAt", label: "Creado", type: "date" }
+    { key: "name", label: "Nombre" },
+    { key: "code", label: "Código" },
+    { key: "branchId", label: "Sucursal" },
+    { key: "isActive", label: "Estado" }
   ],
   users: [
-    { key: "name", label: "Nombre", type: "text" },
-    { key: "email", label: "Email", type: "text" },
-    { key: "phone", label: "Teléfono", type: "text" },
-    { key: "status", label: "Status", type: "status" },
+    { key: "name", label: "Nombre" },
+    { key: "email", label: "Email" },
+    { key: "roles", label: "Roles", type: "list" },
+    { key: "isActive", label: "Estado" },
     { key: "createdAt", label: "Creado", type: "date" }
   ],
   roles: [
-    { key: "name", label: "Nombre", type: "text" },
-    { key: "description", label: "Descripción", type: "text" },
+    { key: "name", label: "Nombre" },
+    { key: "description", label: "Descripción" },
+    { key: "permissions", label: "Permisos", type: "list" },
     { key: "createdAt", label: "Creado", type: "date" }
   ]
 };
